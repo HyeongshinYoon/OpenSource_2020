@@ -1,9 +1,9 @@
 import cv2
-from openpyxl import Workbook, load_workbook
 
 
 def image_divide(img):
 
+    face_cascade = cv2.CascadeClassifier('./xml/haarcascade_frontface.xml')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
@@ -14,19 +14,19 @@ def image_divide(img):
     resize_faces = face_cascade.detectMultiScale(resize_gray, 1.3, 5)
 
     (rx, ry, rw, rh) = resize_faces[0]
-    y1, y2 = int(ry - int(rh/6)), int(ry + rh + int(rh/6))
-    x1, x2 = int(rx - int(rw/6)), int(rx + rw + int(rw/6))
+    y1, y2 = int(ry - int(rh/4)), int(ry + rh + int(rh/4))
+    x1, x2 = int(rx - int(rw/4)), int(rx + rw + int(rw/4))
 
     old_face = resize_img[y1:y2, x1:x2]
     cv2.imwrite('old_face.jpg', old_face)
     cv2.imwrite('resize_image.jpg', resize_img)
 
-    return x, y, w, h, old_face, resize_img
+    return rx, ry, rw, rh, old_face, resize_img
 
 
 def image_merge_process(body, face, x, y, w, h):
-    y1, y2 = int(y - int(h/6)), int(y + h + int(h/6))
-    x1, x2 = int(x - int(w/6)), int(x + w + int(w/6))
+    y1, y2 = int(y - int(h/4)), int(y + h + int(h/4))
+    x1, x2 = int(x - int(w/4)), int(x + w + int(w/4))
     resized_face = cv2.resize(face,
                               (y2-y1, x2-x1), interpolation=cv2.INTER_CUBIC)
 

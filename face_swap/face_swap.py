@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 """
 Run all the separate components of face swapping in an easily understandable high-level runner class
+reference: https://github.com/BruceMacD/Face-Swap-OpenCV
 """
 
 import cv2
@@ -13,7 +14,7 @@ from face_swap.clone_mask import merge_mask_with_image
 EXPECTED_NUM_IN = 2
 
 
-def face_swap(img_1, img_2):
+def face_swap(img_2, img_1):
 
     # find the facial landmarks which return the key points of the face
     # localizes and labels areas such as eyebrows and nose

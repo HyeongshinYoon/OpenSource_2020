@@ -1,7 +1,6 @@
 import pyrebase
-from flask import *
-from werkzeug.utils import secure_filename
-from PIL import Image
+from flask import Flask
+#from flask_login import LoginManager, current_user
 
 
 config = {
@@ -19,80 +18,129 @@ app = Flask(__name__)
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 storage = firebase.storage()
-group_post = {}
-city_titles = ""
-last_post_id = 0
+# login = LoginManager(app)
+user_id = 0
 
 
-@app.route("/")
-@app.route("/login", methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template('Login.html')
+    global user_id
+    user_id = 1
 
 
-@app.route("/main", methods=['GET', 'POST'])
-def main():
-    global last_post_id
-    last_post_id = db.child("Last_post_id").get()
-    if last_post_id == None:
-        last_post_id = 0
-    return render_template('Main.html')
+@app.route("/settings")
+def settings():
+    pass
 
 
-@app.route("/citytitles", methods=['GET', 'POST'])
-def citytitles():
-    city_titles = db.child("posts").get()
-    return json.dumps(city_titles)
+@app.route("/logout")
+def logout():
+    user_id = 0
+#    logout_user()
+
+# random 5
 
 
-@app.route("/setData", methods=['GET', 'POST'])
-def setData():
-    return json.dumps('traveldiary?cityId=')
+@app.route("/selectBody", methods=['GET', 'POST'])
+def selectBody():
+    bodys = db.child("bodys").get()
+    return json.dumps(bodys)
 
 
-@app.route("/getData/<name>", methods=['GET', 'POST'])
-def getData(name):
-    selected_group_id = name
-    group_post_id = db.child("tag").child(selected_group_id).get()
-    global group_post
-    group_post = {}
-    if group_post_id.each() == None:
+@app.route("/selectFace", methods=['GET', 'POST'])
+def selectFace():
+    bodys = db.child("faces").get()
+    return json.dumps(bodys)
+
+
+@app.route("/addFace", methods=['GET', 'POST'])
+def addFace():
+    if request.method == 'POST':
+        last_face_id = db.child("last_face_id").get().val()
+        if last_face_id == None:
+            last_face_id = 0
+
+        title = request.form['title']
+        face = request.files.get('face')
+        files = []
+
+        storage.child(last_face_id).put(face)
+        files.append(last_face_id)
+
+        data = [{"title": title, "files": files}]
+        db.child('faces').child(last_face_id).push(data)
+
+        last_face_id = last_face_id + 1
+        db.child("last_face_id").set(last_face_id)
+
+
+@app.route("/addBody", methods=['GET', 'POST'])
+def addBody():
+    if request.method == 'POST':
+        last_body_id = db.child("last_body_id").get().val()
+        if last_body_id == None:
+            last_body_id = 0
+
+        title = request.form['title']
+        body = request.files.get('body')
+        files = []
+
+        storage.child(last_body_id).put(body)
+        files.append(last_body_id)
+
+        data = [{"title": title, "files": files}]
+        db.child('bodys').child(last_body_id).push(data)
+
+        last_body_id = last_body_id + 1
+        db.child("last_body_id").set(last_body_id)
+
+
+@app.route("/addNewModel", methods=['GET', 'POST'])
+def addNewModel():
+    if request.method == 'POST':
+        last_model_id = db.child("last_model_id").get().val()
+        if last_model_id == None:
+            last_model_id = 0
+
+        title = request.form['title']
+        model = request.files.get('model')
+        files = []
+
+        storage.child(last_model_id).put(model)
+        files.append(last_model_id)
+
+        data = [{"title": title, "files": files}]
+        db.child('models').child(last_model_id).push(data)
+
+        last_model_id = last_model_id + 1
+        db.child("last_model_id").set(last_model_id)
+
+
+@app.route("/myPage", methods=['GET', 'POST'])
+def myPage():
+    name = current_user.name
+    logo = storage.child(current_user.logo_url).get_url("hello.png")
+
+
+@app.route("/getLookbook/<user>", methods=['GET', 'POST'])
+def getLookbook(user):
+    Lookbook_id = db.child(user).child("LookbookId").get()
+    lookbook = {}
+    if Lookbook_id.each() == None:
         return json.dumps('')
     else:
-        for id in group_post_id.each():
-            post = db.child("posts").child(id.val()).get()
-            group_post[id.val()] = (post.val())
+        model = storage.child('LookBook').child(Lookbook_id).get()
+        for id in Lookbook_id.each():
+            lookbook[id.val()] = (model.val())
 
-    return json.dumps(group_post)
-
-
-@app.route("/getDataId/<id>", methods=['GET', 'POST'])
-def getDataId(id):
-    post = db.child("posts").child(id).get().val()
-    return json.dumps(post)
+    return json.dumps(lookbook)
 
 
-@app.route("/getDatas", methods=['GET', 'POST'])
-def getDatas():
-    group_post = db.child("posts").get().val()
-    return json.dumps(group_post)
-
-
-@app.route("/getPhoto/<filename>", methods=['GET', 'POST'])
+@app.route("/getModel/<filename>", methods=['GET', 'POST'])
 def getPhoto(filename=None):
     text = filename.strip('"')
-    photo = storage.child(text).get_url("hello.png")
+    photo = storage.child('model').get_url("hello.png")
     return photo
-
-
-@app.route("/logout", methods=['GET', 'POST'])
-def logout():
-    return render_template('Login.html')
-
-
-@app.route("/traveldiary", methods=['GET', 'POST'])
-def traveldiary(posts=None):
-    return render_template('TravelDiary.html')
 
 
 @app.route("/upload", methods=['GET', 'POST'])
@@ -121,26 +169,6 @@ def upload():
         last_post_id = last_post_id + 1
         db.child("last_post_id").set(last_post_id)
     return render_template('Upload.html')
-
-
-@app.route('/citylist', methods=['GET', 'POST'])
-def citylist():
-    city_list = db.child("citylist").get()
-    return json.dumps(city_list.val())
-
-
-@app.route("/post", methods=['GET', 'POST'])
-def post():
-    return render_template('Post.html')
-
-#
-# def traveldiary(id=None):
-#     city_name = request.form.get('selected_group_id', 0)
-#     return render_template('TravelDiary.html', city_name)
-#     return redirect(url_for('main'))
-    # city_post = db.child("diary").get()
-    # to = todo.val()
-    # return
 
 
 if __name__ == '__main__':
