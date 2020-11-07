@@ -1,7 +1,8 @@
 import cv2
 from face_crop.face_crop import image_divide, image_merge_process
 from face_swap.face_swap import face_swap
-
+from face_gen.generate import face_gen
+from face_gen.mix import style_mixing
 
 def main():
 
