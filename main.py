@@ -13,12 +13,14 @@ def main():
     body_x, body_y, body_w, body_h, old_face, resized_body = image_divide(body)
 
     #new_face_input = int(input())
-    new_face_input = "./crop_image5.jpg"
+    # get image from styleGAN
+    new_face_input = styleGAN()
+    # new_face_input = "./crop_image5.jpg"
     new_face = cv2.imread(new_face_input)
     swap_face = face_swap(old_face, new_face)
-    result_img = image_merge_process(resized_body, swap_face,
-                                     body_x, body_y, body_w, body_h)
-
+    swap_img = image_merge_process(resized_body, swap_face,
+                                   body_x, body_y, body_w, body_h)
+    result_img = viton(swap_img)
     cv2.imwrite("result_img.jpg", result_img)
 
 
