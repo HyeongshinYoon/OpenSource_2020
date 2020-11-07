@@ -12,14 +12,15 @@ def style_mixing(source, target, img_name):
 
     source_code = torch.tensor(source)
     target_code = torch.tensor(target)
+
+    # If you have a GPU, change device to cuda
     device = 'cpu'
-    # device = 'cuda'
     alpha = 1
     step = int(math.log(256, 2)) - 2
 
     generator = StyledGenerator(512).to(device)
     generator.load_state_dict(torch.load(
-        "./checkpoint/stylegan-256px-new.model", map_location=torch.device('cpu'))['g_running'])
+        "./checkpoint/stylegan-256px-new.model", map_location=torch.device(device))['g_running'])
     generator.eval()
 
     mean_style = get_mean_style(generator, device)

@@ -6,6 +6,7 @@ from face_gen.mix import style_mixing
 
 
 def refresh_image(n):
+
     style_vector = []
     for i in range(n):
         style = face_gen("new_face"+str(i)).tolist()
@@ -17,15 +18,13 @@ def refresh_image(n):
 def mixing_image(style, n):
 
     style_vector = refresh_image(n)
-
     for i in range(n):
         style_mixing(style, style_vector[i], "new_face"+str(i+n))
 
 
 def main():
 
-    #body_input = int(input())
-    #body = "./image/image" + str(body_input) + ".jpg"
+    # get body and resize body
     body_address = "./image/image1.jpg"
     body = cv2.imread(body_address)
     body_x, body_y, body_w, body_h, old_face, resized_body = image_divide(body)
