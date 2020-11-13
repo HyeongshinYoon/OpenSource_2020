@@ -23,11 +23,14 @@
       <router-link to="face" id="next-button" class="btn">Next</router-link>
     </div>
   </div>
-</template>
+</template> 
 
 <script>
+// import axios from 'axios'
+
 export default {
-  name: "HelloWorld",
+  name: "BodyPage",
+  props:['image_file', 'flag'],
   data: function () {
     return {
       bdy: [
@@ -37,12 +40,15 @@ export default {
         { id: 4, sel: false, src: require("../assets/new_photo.png") },
         { id: 5, sel: false, src: require("../assets/new_photo.png") },
       ],
-      curr: 1,
+      curr: -1,
     };
   },
   methods: {
     flipSelect(i) {
-      this.bdy[this.curr - 1].sel = false;
+      // console.log(this.image_file);
+      this.bdy[0].src = this.image_file;
+      
+      if (this.curr>0) {this.bdy[this.curr - 1].sel = false;}
       this.bdy[i - 1].sel = true;
       this.curr = i;
     },
@@ -53,7 +59,32 @@ export default {
         return "#001236";
       }
     },
-  },
+  // },
+  // created() {
+  //   fetch(this.image_file)
+  //     .then(res => res.blob()) // Gets the response and returns it as a blob
+  //     .then(blob => {
+  //       // Here's where you get access to the blob
+  //       // And you can use it for whatever you want
+  //       // Like calling ref().put(blob)
+
+  //       // Here, I use it to make an image appear on the page
+  //       // let objectURL = URL.createObjectURL(blob);
+  //       // let myImage = new Image();
+  //       // myImage.src = objectURL;
+  //       // document.getElementById('myImg').appendChild(myImage)
+
+  //       axios.post('http://localhost:5000/selectBody', { 
+  //         cloth: blob,
+  //         flag: this.flag,
+  //         user_id: this.$cookie.get('user_id')
+  //       }).then(result => {
+  //         console.log(result)
+  //       })
+        
+  //   });
+    
+  }
 };
 </script>
 

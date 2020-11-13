@@ -10,45 +10,53 @@ export default new Router({
       path: "/",
       alias: "/index",
       name: "index",
-      component: () => import("../components/Intro")
+      props: true,
+      component: () => import("../components/Intro"),
     },
     {
       path: "/login",
       name: "login",
-      component: () => import("../components/Login")
+      props: true,
+      component: () => import("../components/Login"),
     },
     {
       path: "/main",
       name: "main",
+      props: true,
       component: () => import("../components/MainPage"),
       children: [
         {
           path: "/mypage",
           alias: "/",
           name: "mypage",
-          component: () => import("../components/MyPage")
+          props: true,
+          component: () => import("../components/MyPage"),
         },
         {
           path: "/upload",
           name: "upload",
-          component: () => import("../components/Upload")
+          props: true,
+          component: () => import("../components/Upload"),
         },
         {
           path: "/body",
           name: "body",
-          component: () => import("../components/BodyPage")
+          props: true,
+          component: () => import("../components/BodyPage"),
         },
         {
           path: "/face",
           name: "face",
-          component: () => import("../components/FacePage")
+          props: true,
+          component: () => import("../components/FacePage"),
         },
         {
           path: "/download",
           name: "download",
-          component: () => import("../components/Download")
-        }
-      ]
-    }
-  ]
+          props: true,
+          component: () => import("../components/Download"),
+        },
+      ],
+    },
+  ],
 });

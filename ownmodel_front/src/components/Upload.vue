@@ -5,14 +5,15 @@
       href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
     />
     <p id="upload-title">1. Upload Clothes</p>
-    <div id="photo-wrapper">
-      <input type="file" />
-      <img id="new-photo" v-bind:src="image_src" />
-    </div>
-    <div id="buttons">
-      <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
-      <router-link to="body" id="next-button" class="btn">Next</router-link>
-    </div>
+    <!-- <form id="upload-form" action="/" -->
+      <div id="photo-wrapper">
+        <input id="upload_logic" type="file" v-on:change="uploadImage" style="display: none"/>
+        <img id="new-photo" v-bind:src="image_src" v-on:click="clickUpload()"/>
+      </div>
+      <div id="buttons">
+        <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
+        <router-link v-bind:to="{ name: 'body', params: {'image_file': new_src, 'flag': false }}" id="next-button" class="btn">Next</router-link>
+      </div> 
   </div>
 </template>
 
@@ -21,15 +22,24 @@ export default {
   name: "HelloWorld",
   data: function() {
     return {
-      lookbook_photos: ["a", "b", "c", "d", "e", "f"],
       image_src: require("../assets/new_photo.png"),
+      image_file: null,
+      new_src: require("../assets/new_photo.png"),
     };
   },
   methods: {
-    loadImage: function(event) {
-      alert("File uploaded");
-      alert(event);
+    uploadImage: function(event) {
+      this.image_file = event.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(this.image_file);
+      reader.onload = e =>{
+          this.image_src = e.target.result;
+          this.new_src = e.target.result;
+      };
     },
+    clickUpload: function() {
+      document.getElementById("upload_logic").click();
+    }
   },
 };
 </script>
@@ -77,6 +87,9 @@ p {
   border-width: 5px;
   border-color: #001236;
   border-radius: 20px;
+}
+#new-photo:hover {
+  cursor: pointer;
 }
 #buttons {
   margin-top: 20px;

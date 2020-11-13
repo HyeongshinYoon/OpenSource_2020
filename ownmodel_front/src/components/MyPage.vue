@@ -10,11 +10,11 @@
       <div id="lookbook-top">
         <p id="lookbook-title">Lookbook</p>
         <router-link to="upload" id="lookbook-next" class="btn">New</router-link>
-      </div>      
+      </div>
       <div id="lookbook-list">
         <ul class="grid">
-        <li v-for="photo in lookbook_photos" v-bind:key = "photo">
-          <img class="lookbook-img" src="../assets/sample.jpg">
+        <li v-for="photo in lookbook_photos" v-bind:key = "photo.id">
+          <img class="lookbook-img" v-bind:src="photo.src">
         </li>
       </ul>
       </div>
@@ -27,7 +27,13 @@ export default {
   name: 'HelloWorld',
   data: function () {
   return {
-    lookbook_photos: ["a","b","c","d","e","f"],
+    lookbook_photos: [
+      { id: 1, src: require("../assets/sample.jpg") },
+      { id: 2, src: require("../assets/sample.jpg") },
+      { id: 3, src: require("../assets/sample.jpg") },
+      { id: 4, src: require("../assets/sample.jpg") },
+      { id: 5, src: require("../assets/sample.jpg") },
+    ],
   }
   },
   methods: {
@@ -76,8 +82,11 @@ p {
 #acc-img {
   width: 250px;
   height: 250px;
-  background-color: #001236;
+  background-color: whitesmoke;
+  border-color: #001236;
+  border-style: solid;
   border-radius: 30px;
+  border-width: 5px;
   margin-left: 70px;
 }
 #lookbook {
