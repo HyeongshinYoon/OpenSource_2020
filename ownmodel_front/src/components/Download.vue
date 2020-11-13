@@ -1,10 +1,15 @@
 <template>
   <div id="upload">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
+    />
     <p id="upload-title">4. Download Image</p>
-    <div id="photo-wrapper"><img id="new-photo" src="../assets/new_photo.png"></div>
+    <div id="photo-wrapper">
+      <img id="new-photo" v-bind:src="image_src" />
+    </div>
     <div id="buttons">
-      <router-link to="face" id="back-button" class="btn">Back</router-link>
+      <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
       <router-link to="mypage" id="done-button" class="btn">Done</router-link>
     </div>
   </div>
@@ -12,25 +17,26 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
   data: function () {
-  return {
-    lookbook_photos: ["a","b","c","d","e","f"],
-  }
+    return {
+      lookbook_photos: ["a", "b", "c", "d", "e", "f"],
+      image_src: require("../assets/new_photo.png"),
+    };
   },
   methods: {
     logIn: function () {
       alert("login pressed");
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 @font-face {
   font-family: "AbrilFatface";
-  src: url("../assets/AbrilFatface-Regular.ttf") format('truetype');
+  src: url("../assets/AbrilFatface-Regular.ttf") format("truetype");
 }
 
 h3 {
@@ -61,7 +67,6 @@ p {
 }
 #photo-wrapper {
   width: 100%;
-  
 }
 #new-photo {
   height: 400px;
