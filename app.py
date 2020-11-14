@@ -1,5 +1,5 @@
 import pyrebase
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 from PIL import Image
 import numpy as np
@@ -45,9 +45,11 @@ fixed_body = {}
 def body_init():
     global bodys
     if len(bodys) == 0:
-        bodys_name = db.child("bodys").get()["data"]
-        for i in range(bodys_name):
-            bodys.append(storage.child('bodys').download(bodys_name[i]))
+        bodys_name = db.child("bodys").get()
+#        print(bodys_name)
+        for body in bodys_name.each():
+            print(body.val())
+            bodys.append(storage.child('bodys').download(body.val()))
 
 
 @app.route("/addBody", methods=['GET', 'POST'])
@@ -58,10 +60,13 @@ def addBody():
 
     db.child('bodys').remove()
     for i in range(10):
-        body = cv2.imread("./data/body/body"+str(i+1)+".jpg")
+        body_address = "./data/body/body"+str(i+1)+".jpg"
+        # body = cv2.imread("./data/body/body"+str(i+1)+".jpg").tolist()
+        with open(body_address, 'rb') as imageFile:
+            a = imageFile.read()
+#            a = base64.b64encode(imageFile.read())  # .decode('utf8')
         # body = "./data/body/body"+str(i+1)+".jpg"
-        storage.child("body"+str(last_body_id)
-                      ).put(Image.fromarray(body, 'RGB'))
+        storage.child("body"+str(last_body_id)).put(a)
         db.child('bodys').push("body"+str(last_body_id))
         last_body_id = last_body_id + 1
 
@@ -75,37 +80,42 @@ def selectBody():
     selecting_bodys = {}
 
     # test
+    '''
     for i in range(5):
         body_address = "./data/test/cloth/000048_1.jpg"
         with open(body_address, 'rb') as imageFile:
             a = base64.b64encode(imageFile.read()).decode('utf8')
-        #body = cv2.imread(body_address)
+        # body = cv2.imread(body_address)
         selecting_bodys[i] = a
 
     # real
     '''
-    flag = request.form.get('flag')
-    user_id = request.form.get('user_id')
+    flag = True  # request.form.get('flag')
+    user_id = 0  # request.form.get('user_id')
     if flag == True:
-        cloth = request.file.get('cloth')
+        # cloth = request.form.get('cloth')
+        req_data = request.json
+        # print("req_data :" + json.dumps(req_data))
+        # print(request.files)
+        cloth = req_data['cloth']
         if cloth == None:
             selecting_bodys = face_mixing_img[user_id]
             pass
         else:
-            cloth_img[user_id] = cloth
-            get_mask(cloth)
+            #cloth_img[user_id] = cloth
+            # get_mask(cloth)
 
             # body mixing
-            rand_num = np.random.randint(5, bodys.size)
+            rand_num = np.random.randint(5, size=len(bodys))
             for i in range(5):
                 body = bodys[rand_num[i]]
 
                 # GMM test
-                data_list = [body, cloth]
-                viton('GMM', data_list)
+                #data_list = [body, cloth]
+                #viton('GMM', data_list)
 
                 # TOM test
-                viton('TOM', data_list)
+                #viton('TOM', data_list)
 
                 # result_img
                 selecting_bodys[i] = body
@@ -113,7 +123,6 @@ def selectBody():
     else:
         selecting_bodys = body_mixing_img[user_id]
 
-    '''
     body_mixing_img[user_id] = selecting_bodys
 
     return json.dumps(selecting_bodys)
@@ -128,10 +137,11 @@ def selectFaceFirst():
     selecting_faces = {}
     style_v = {}
 
-    flag = request.form.get('flag')
-    user_id = request.form.get('user_id')
+    req_data = request.json
+    flag = req_data['flag']
+    user_id = req_data['user_id']
     if flag == True:
-        body_id = request.form.get('body_id')
+        body_id = req_data['body_id']
         if body_id == None:
             selecting_faces = face_mixing_img[user_id]['faces']
         else:
@@ -159,10 +169,11 @@ def selectFaceSecond():
     selecting_faces = {}
     style_v = {}
 
-    flag = request.form.get('flag')
-    user_id = request.form.get('user_id')
+    req_data = request.json
+    flag = req_data['flag']
+    user_id = req_data['user_id']
     if flag == True:
-        face_id = request.form.get('face_id')
+        face_id = req_data['face_id']
         if face_id == None:
             selecting_faces = face_mixing_img[user_id]['second_faces']
         else:
@@ -184,8 +195,9 @@ def selectModel():
     global face_mixing_img
     global fixed_body
 
-    user_id = request.form.get('user_id')
-    face_id = request.form.get('face_id')
+    req_data = request.json
+    user_id = req_data['user_id']
+    face_id = req_data['face_id']
     result_face = face_mixing_img[user_id]['second_faces'][face_id]
 
     model = image_merge_process(fixed_body[user_id], result_face)
@@ -195,14 +207,15 @@ def selectModel():
 
 @ app.route("/addLookBook", methods=['GET', 'POST'])
 def addLookBook():
+    req_data = request.json
+    user_id = req_data['user_id']
+    model = req_data['model']
     user_id = request.form.get('user_id')
     last_model_id = db.child("last_model_id").get().val()
     if last_model_id == None:
         last_model_id = 0
 
-    model = request.file.get('model')
     storage.child("model"+str(last_model_id)).put(model)
-
     db.child(user_id).child('lookbook').push("model"+str(last_model_id))
 
     last_model_id = last_model_id + 1
@@ -217,11 +230,13 @@ def getLookbook(user):
 
     lookbook = {}
     if lookbook_ids.each() == None:
-        return json.dumps('')
+        return json.dumps({})
     else:
-        for i in range(lookbook_ids):
-            model = storage.child(lookbook_ids[i]).get_url()
-            lookbook[i] = model
+        cnt = 0
+        for lookbook_id in lookbook_ids:
+            model = storage.child(lookbook_id).get_url()
+            lookbook[cnt] = model
+            cnt = cnt + 1
 
     return json.dumps(lookbook)
 
