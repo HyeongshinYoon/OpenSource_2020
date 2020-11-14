@@ -12,7 +12,7 @@
       </div>
       <div id="buttons">
         <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
-        <router-link v-bind:to="{ name: 'body', params: {'image_file': new_src, 'flag': false }}" id="next-button" class="btn">Next</router-link>
+        <button id="next-button" class="btn" v-on:click="moveOn()">Next</button>
       </div> 
   </div>
 </template>
@@ -30,6 +30,7 @@ export default {
   methods: {
     uploadImage: function(event) {
       this.image_file = event.target.files[0];
+      console.log(event.target.files[0]);
       const reader = new FileReader();
       reader.readAsDataURL(this.image_file);
       reader.onload = e =>{
@@ -39,6 +40,9 @@ export default {
     },
     clickUpload: function() {
       document.getElementById("upload_logic").click();
+    },
+    moveOn: function() {
+      this.$router.push({ name: 'body', params: {'image_file': this.new_src, 'flag': false }});
     }
   },
 };

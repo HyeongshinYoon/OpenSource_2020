@@ -76,23 +76,24 @@ export default {
         axios.post('http://192.168.243.17:8888/selectBody', { 
           cloth: blob,
           flag: this.flag,
-          //user_id: this.$cookie.get('user_id')
+          user_id: this.$cookie.get('user_id')
         }).then(res => {
-          // console.log(res);
+          console.log(res);
           for(let i=0; i<5; i++) {
-            const i_f = new Blob([res(i)], { type: 'image/jpg' });
+            var blob = new Blob([encodeURI(res.data[i])], { type: 'image/jpg' });
+            var file = new File([blob], 'tmp_file.jpg', {type: 'image/jpg', lastModified: Date.now()});
+            console.log(file);
             const reader = new FileReader();
-            reader.readAsDataURL(i_f);
+            reader.readAsDataURL(file);
             reader.onload = e =>{
-                this.image_src = e.target.result;
-                this.new_src = e.target.result;
+                // this.image_src = e.target.result;
+                // this.new_src = e.target.result;
+                // console.log(e.target.result);
                 this.bdy[i].src = e.target.result;
             };
           }
         })
-        
     });
-    
   }
 };
 </script>

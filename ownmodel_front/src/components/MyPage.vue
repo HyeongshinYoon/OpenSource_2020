@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'HelloWorld',
   data: function () {
@@ -36,10 +38,18 @@ export default {
     ],
   }
   },
-  methods: {
-    logIn: function () {
-      alert("login pressed");
-    }
+  created() {
+    axios.get('http://localhost:8888/getLookbook').then(res => {
+      let lookbook_photos= [];
+      for(let i=0; i<res.len(); i++) {
+        const reader = new FileReader();
+        reader.readAsDataURL(res(i));
+        reader.onload = e =>{
+          lookbook_photos.push({id: i, src: e.target.result});
+        };        
+      }
+      this.lookbook_photos = lookbook_photos;
+    })
   }
 }
 </script>

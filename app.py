@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 import cv2
 import json
+import os
+import base64
 from cp_viton.get_mask import get_mask
 from cp_viton.test import viton
 from face_crop.face_crop import image_divide, image_merge_process
@@ -54,19 +56,19 @@ def addBody():
     if last_body_id == None:
         last_body_id = 0
 
+    db.child('bodys').remove()
     for i in range(10):
-        body_address = "./data/test/cloth/000048_1.jpg"
-        body = Image.open(body_address)
-        #body = cv2.imread("./data/body/body"+str(i+1)+".jpg")
-        storage.child("body"+str(last_body_id)).put(body)
-        # storage.child("body"+str(last_body_id)).put(Image.fromarray(body))
+        body = cv2.imread("./data/body/body"+str(i+1)+".jpg")
+        # body = "./data/body/body"+str(i+1)+".jpg"
+        storage.child("body"+str(last_body_id)
+                      ).put(Image.fromarray(body, 'RGB'))
         db.child('bodys').push("body"+str(last_body_id))
         last_body_id = last_body_id + 1
 
     db.child("last_body_id").set(last_body_id)
 
 
-@app.route("/selectBody", methods=['GET', 'POST'])
+@ app.route("/selectBody", methods=['GET', 'POST'])
 def selectBody():
     global cloth_img, body_mixing_img, bodys
 
@@ -75,8 +77,10 @@ def selectBody():
     # test
     for i in range(5):
         body_address = "./data/test/cloth/000048_1.jpg"
-        body = Image.open(body_address)
-        selecting_bodys[i] = body
+        with open(body_address, 'rb') as imageFile:
+            a = base64.b64encode(imageFile.read()).decode('utf8')
+        #body = cv2.imread(body_address)
+        selecting_bodys[i] = a
 
     # real
     '''
@@ -115,7 +119,7 @@ def selectBody():
     return json.dumps(selecting_bodys)
 
 
-@app.route("/selectFaceFirst", methods=['GET', 'POST'])
+@ app.route("/selectFaceFirst", methods=['GET', 'POST'])
 def selectFaceFirst():
 
     global body_mixing_img, face_mixing_img
@@ -147,7 +151,7 @@ def selectFaceFirst():
     return json.dumps(selecting_faces)
 
 
-@app.route("/selectFaceSecond", methods=['GET', 'POST'])
+@ app.route("/selectFaceSecond", methods=['GET', 'POST'])
 def selectFaceSecond():
 
     global face_mixing_img
@@ -174,7 +178,7 @@ def selectFaceSecond():
     return json.dumps(selecting_faces)
 
 
-@app.route("/selectModel", methods=['GET', 'POST'])
+@ app.route("/selectModel", methods=['GET', 'POST'])
 def selectModel():
 
     global face_mixing_img
@@ -189,7 +193,7 @@ def selectModel():
     return json.dumps(model)
 
 
-@app.route("/addLookBook", methods=['GET', 'POST'])
+@ app.route("/addLookBook", methods=['GET', 'POST'])
 def addLookBook():
     user_id = request.form.get('user_id')
     last_model_id = db.child("last_model_id").get().val()
@@ -205,7 +209,7 @@ def addLookBook():
     db.child("last_model_id").set(last_model_id)
 
 
-@app.route("/getLookbook", methods=['GET', 'POST'])
+@ app.route("/getLookbook", methods=['GET', 'POST'])
 def getLookbook(user):
 
     user_id = request.form.get('user_id')

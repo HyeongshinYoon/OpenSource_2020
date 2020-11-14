@@ -3,12 +3,13 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <p class="logo">OwnModel</p>
     <div id="login-box">
-      <p class="login-text">Î°úÍ∑∏Ïù∏</p>
+      <p class="login-text">Î°úÍ∑∏?ù∏</p>
       <div class="form-group">
-        <input type="text" name="id" id="id" class="form-control" placeholder="ÏïÑÏù¥Îîî"/>
-        <input type="password" name="password" id="password" class="form-control" placeholder="ÎπÑÎ∞ÄÎ≤àÌò∏" v-model="user.password"/>
+        <input type="text" name="id" id="id" class="form-control" v-model="user.id" placeholder="?ïÑ?ù¥?îî"/>
+        <input type="password" name="password" id="password" class="form-control" placeholder="ÎπÑÎ??Î≤àÌò∏" v-model="user.password"/>
       </div>
-      <router-link to="main" class="btn">Go</router-link>
+      <!-- <router-link to="main" class="btn">Go</router-link> -->
+      <button class="btn" v-on:click="logIn()">Go</button>
     </div>
   </div>
 </template>
@@ -25,7 +26,8 @@ export default {
   },
   methods: {
     logIn: function () {
-      alert("login pressed");
+      this.$cookie.set('user_id',this.user.id,'1h');
+      this.$router.push({ path: 'main'});
     }
   }
 }
