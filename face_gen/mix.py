@@ -8,7 +8,7 @@ from face_gen.mean_style import get_mean_style
 
 
 @torch.no_grad()
-def style_mixing(source, target, img_name):
+def style_mixing(source, target):
 
     source_code = torch.tensor(source)
     target_code = torch.tensor(target)
@@ -34,8 +34,8 @@ def style_mixing(source, target, img_name):
         mixing_range=(0, 1),
     )
 
-    utils.save_image(
-        image, f'{img_name}.jpg', nrow=1, normalize=True, range=(-1, 1)
+    img_grid = utils.make_grid(
+        image, nrow=1, normalize=True, range=(-1, 1)
     )
 
-    return
+    return img_grid

@@ -8,7 +8,7 @@ from face_gen.model import StyledGenerator
 
 
 @torch.no_grad()
-def face_gen(img_name):
+def face_gen():
 
     # If you have a GPU, change device to cuda
     device = 'cpu'
@@ -30,8 +30,8 @@ def face_gen(img_name):
         style_weight=0.7,
     )
 
-    utils.save_image(
-        image, f'{img_name}.jpg', nrow=1, normalize=True, range=(-1, 1)
+    img_grid = utils.make_grid(
+        image, nrow=1, normalize=True, range=(-1, 1)
     )
 
-    return style
+    return style, img_grid

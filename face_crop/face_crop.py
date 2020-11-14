@@ -21,10 +21,12 @@ def image_divide(img):
     cv2.imwrite('old_face.jpg', old_face)
     cv2.imwrite('resize_image.jpg', resize_img)
 
-    return rx, ry, rw, rh, old_face, resize_img
+    return [rx, ry, rw, rh, old_face, resize_img]
 
 
-def image_merge_process(body, face, x, y, w, h):
+def image_merge_process(fixed_body, face):
+    x, y, w, h, _, body = fixed_body
+
     y1, y2 = int(y - int(h/4)), int(y + h + int(h/4))
     x1, x2 = int(x - int(w/4)), int(x + w + int(w/4))
     resized_face = cv2.resize(face,

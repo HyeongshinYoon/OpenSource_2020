@@ -4,7 +4,7 @@
       rel="stylesheet"
       href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
     />
-    <p id="upload-title">2. Select Body</p>
+    <p id="upload-title">Select Body</p>
     <div id="bodies-wrapper">
       <div v-for="body in bdy" v-bind:key="body.id" class="photo-wrapper">
         <img
@@ -19,14 +19,13 @@
     </div>
     <div id="buttons">
       <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
-      <!-- <router-link to="upload" id="back-button" class="btn">Back</router-link> -->
       <router-link to="face" id="next-button" class="btn">Next</router-link>
     </div>
   </div>
 </template> 
 
 <script>
-// import axios from 'axios'
+import axios from 'axios'
 
 export default {
   name: "BodyPage",
@@ -59,30 +58,40 @@ export default {
         return "#001236";
       }
     },
-  // },
-  // created() {
-  //   fetch(this.image_file)
-  //     .then(res => res.blob()) // Gets the response and returns it as a blob
-  //     .then(blob => {
-  //       // Here's where you get access to the blob
-  //       // And you can use it for whatever you want
-  //       // Like calling ref().put(blob)
+  },
+  created() {
+    fetch(this.image_file)
+      .then(res => res.blob()) // Gets the response and returns it as a blob
+      .then(blob => {
+        // Here's where you get access to the blob
+        // And you can use it for whatever you want
+        // Like calling ref().put(blob)
 
-  //       // Here, I use it to make an image appear on the page
-  //       // let objectURL = URL.createObjectURL(blob);
-  //       // let myImage = new Image();
-  //       // myImage.src = objectURL;
-  //       // document.getElementById('myImg').appendChild(myImage)
+        // Here, I use it to make an image appear on the page
+        // let objectURL = URL.createObjectURL(blob);
+        // let myImage = new Image();
+        // myImage.src = objectURL;
+        // document.getElementById('myImg').appendChild(myImage)
 
-  //       axios.post('http://localhost:5000/selectBody', { 
-  //         cloth: blob,
-  //         flag: this.flag,
-  //         user_id: this.$cookie.get('user_id')
-  //       }).then(result => {
-  //         console.log(result)
-  //       })
+        axios.post('http://192.168.243.17:8888/selectBody', { 
+          cloth: blob,
+          flag: this.flag,
+          //user_id: this.$cookie.get('user_id')
+        }).then(res => {
+          // console.log(res);
+          for(let i=0; i<5; i++) {
+            const i_f = new Blob([res(i)], { type: 'image/jpg' });
+            const reader = new FileReader();
+            reader.readAsDataURL(i_f);
+            reader.onload = e =>{
+                this.image_src = e.target.result;
+                this.new_src = e.target.result;
+                this.bdy[i].src = e.target.result;
+            };
+          }
+        })
         
-  //   });
+    });
     
   }
 };

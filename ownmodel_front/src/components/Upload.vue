@@ -4,7 +4,7 @@
       rel="stylesheet"
       href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
     />
-    <p id="upload-title">1. Upload Clothes</p>
+    <p id="upload-title">Upload Clothes</p>
     <!-- <form id="upload-form" action="/" -->
       <div id="photo-wrapper">
         <input id="upload_logic" type="file" v-on:change="uploadImage" style="display: none"/>
