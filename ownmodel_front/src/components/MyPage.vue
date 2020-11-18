@@ -2,19 +2,23 @@
   <div id="mypage">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <div id="acc-info">
-      <div id="acc-img"></div>
+      <div id="acc-img">
+        <img class="prof-img" src="../assets/musinsha.png"/>
+      </div>
       <div class="acc-menu"><p>Musinsha Store</p></div>
       <div class="acc-menu"><p>Edit</p></div>
     </div>
     <div id="lookbook">
       <div id="lookbook-top">
+        <a id="download-manager" v-bind:href="download_src" download="results.jpg" style="display: none"/>
         <p id="lookbook-title">Lookbook</p>
-        <router-link to="upload" id="lookbook-next" class="btn">New</router-link>
+        <button id="lookbook-next" class="btn" v-on:click="toNew()">New</button>
+        <!-- <router-link to="upload" id="lookbook-next" class="btn">New</router-link> -->
       </div>
       <div id="lookbook-list">
         <ul class="grid">
         <li v-for="photo in lookbook_photos" v-bind:key = "photo.id">
-          <img class="lookbook-img" v-bind:src="photo.src">
+          <img class="lookbook-img" v-bind:src="photo.src" v-on:click="download_img(photo.src)">
         </li>
       </ul>
       </div>
@@ -24,29 +28,40 @@
 
 <script>
 import axios from 'axios'
+import loading_image from '../assets/loading_square.gif'
 
 export default {
   name: 'HelloWorld',
   data: function () {
-  return {
-    lookbook_photos: [
-      { id: 1, src: require("../assets/sample.jpg") },
-      { id: 2, src: require("../assets/sample.jpg") },
-      { id: 3, src: require("../assets/sample.jpg") },
-      { id: 4, src: require("../assets/sample.jpg") },
-      { id: 5, src: require("../assets/sample.jpg") },
-    ],
-  }
+    return {
+      lookbook_photos: [{id: 0, src: loading_image}],
+      download_src: '',
+    }
+  },
+  methods: {
+    toNew() {
+      this.$router.push({ name: 'upload', params: {'flag': 1 }});
+    },
+    download_img(s) {
+      this.download_src = s;
+      document.getElementById("download-manager").click();
+    }
   },
   created() {
+    if (this.$cookie.get('user_id')=='') {
+      this.$router.push({ name: 'index'});
+      alert("You are not logged in.");
+    }
     axios.get('http://localhost:8888/getLookbook').then(res => {
       let lookbook_photos= [];
-      for(let i=0; i<res.len(); i++) {
-        const reader = new FileReader();
-        reader.readAsDataURL(res(i));
-        reader.onload = e =>{
-          lookbook_photos.push({id: i, src: e.target.result});
-        };        
+      console.log(res.data);
+      console.log(Object.keys(res.data).length);
+      for(let i=0; i<Object.keys(res.data).length; i++) {
+        lookbook_photos.push({id: i, src: "data:image/png;base64, "+res.data[i]});
+        this.tmp_src = "data:image/png;base64, "+res.data[i];
+      }
+      if (lookbook_photos.length == 0) {
+        lookbook_photos.push({id: 0, src: require("../assets/new_photo.png")});
       }
       this.lookbook_photos = lookbook_photos;
     })
@@ -125,8 +140,18 @@ p {
   border-color:  #001236;
   border-radius: 20px;
 }
+.prof-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  z-index: -1;
+}
 .lookbook-img {
   width: 100%;
+}
+.lookbook-img:hover {
+  cursor: pointer;
 }
 .acc-menu {
   width: 250px;

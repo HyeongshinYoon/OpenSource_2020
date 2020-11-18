@@ -6,9 +6,9 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # isort:skip
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-def get_mask(cloth_names):
-    for cloth_name in cloth_names:
-        mask = fashion_tools(imageid=cloth_name)
-        image_ = mask.get_dress(True)
-        image_.save('./data/test/cloth-mask/' + cloth_name)
-    return
+def get_mask(cloth_name):
+    #cloth.save('./data/test/cloth/' + cloth_name)
+    mask = fashion_tools(cloth_name)
+    image_ = mask.get_dress(True)
+    image_.save('./data/test/cloth-mask/' + cloth_name)
+#   return

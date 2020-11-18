@@ -4,9 +4,12 @@ import cv2
 def image_divide(img):
 
     face_cascade = cv2.CascadeClassifier('./xml/haarcascade_frontface.xml')
+    img = cv2.imread('./new.jpg')  # 12, 14, 25, 111, 189, 206
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
+    cv2.imshow("img", img)
+    print(len(faces))
     (x, y, w, h) = faces[0]
     resize_img = cv2.resize(
         img, None, fx=256.0/w, fy=256.0/h, interpolation=cv2.INTER_AREA)
@@ -18,10 +21,10 @@ def image_divide(img):
     x1, x2 = int(rx - int(rw/4)), int(rx + rw + int(rw/4))
 
     old_face = resize_img[y1:y2, x1:x2]
-    cv2.imwrite('old_face.jpg', old_face)
-    cv2.imwrite('resize_image.jpg', resize_img)
+    #cv2.imwrite('old_face.jpg', old_face)
+    #cv2.imwrite('resize_image.jpg', resize_img)
 
-    return [rx, ry, rw, rh, old_face, resize_img]
+    return (rx, ry, rw, rh, old_face, resize_img)
 
 
 def image_merge_process(fixed_body, face):

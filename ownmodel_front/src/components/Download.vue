@@ -4,31 +4,73 @@
       rel="stylesheet"
       href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"
     />
-    <p id="upload-title">4. Download Image</p>
+    <p id="upload-title">Download Image</p>
     <div id="photo-wrapper">
       <img id="new-photo" v-bind:src="image_src" />
     </div>
     <div id="buttons">
-      <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
-      <router-link to="mypage" id="done-button" class="btn">Done</router-link>
+      <button id="back-button" class="btn" v-on:click="moveBack()">Back</button>
+      <button id="next-button" class="btn" v-on:click="moveOn()">Next</button>
+      <a id="download-manager" v-bind:href="image_src" download="results.jpg" style="display: none"/>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import loading_image from '../assets/loading.gif'
+
 export default {
   name: "HelloWorld",
+  props:['face_id', 'flag', 'body_id'],
   data: function () {
     return {
-      lookbook_photos: ["a", "b", "c", "d", "e", "f"],
-      image_src: require("../assets/new_photo.png"),
+      image_src: loading_image,
+      ready: false,
     };
   },
   methods: {
-    logIn: function () {
-      alert("login pressed");
+    moveOn: function() {
+      if (!this.ready) {return;}
+      this.ready = false;
+      axios.post('http://localhost:8888/addLookBook', {
+        user_id: this.$cookie.get('user_id'),
+      }).then(res => {
+        res;
+        this.ready = true;
+        this.$router.push({ name: 'mypage', params: {'flag': 1}});
+      })
+      
     },
+    moveBack: function() {
+      if (!this.ready) {return;}
+      this.$router.push({ name: 'face'});
+    },
+    requestImage() {
+      this.ready = false;
+      axios.post('http://localhost:8888/selectModel', {
+        face_id: this.face_id || 0,
+        user_id: this.$cookie.get('user_id'),
+        body_id: this.body_id || 0,
+      }).then(res => {
+        this.image_src = "data:image/png;base64, " + res.data[0];
+        this.ready = true;
+      })
+    },
+    download_img() {
+      document.getElementById("download-manager").click();
+    }
   },
+  created() {
+    if (this.$cookie.get('user_id')=='') {
+      this.$router.push({ name: 'index'});
+      alert("You are not logged in.");
+    }
+    this.requestImage();
+    this.ready=true;
+    // this.image_src = fs.readFileSync("./assets/myaccount.png", "base64");
+    // console.log(this.image_src);
+  }
 };
 </script>
 
@@ -75,6 +117,9 @@ p {
   border-width: 5px;
   border-color: #001236;
   border-radius: 20px;
+}
+#new-photo:hover {
+  cursor: pointer;
 }
 #buttons {
   margin-top: 20px;

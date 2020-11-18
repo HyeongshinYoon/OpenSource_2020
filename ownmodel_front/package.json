@@ -2,7 +2,7 @@
   "name": "ownmodel_front",
   "version": "0.1.0",
   "private": true,
-  "proxy" : "http://192.168.243.17",
+  "proxy" : "http://192.168.219.104/",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

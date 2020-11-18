@@ -35,11 +35,6 @@ class CPDataset(data.Dataset):
         # load data list
         im_names = self.data_list[0]
         c_names = self.data_list[1]
-        # with open(osp.join(opt.dataroot, opt.data_list), 'r') as f:
-        #     for line in f.readlines():
-        #         im_name, c_name = line.strip().split()
-        #         im_names.append(im_name)
-        #         c_names.append(c_name)
 
         self.im_names = im_names
         self.c_names = c_names

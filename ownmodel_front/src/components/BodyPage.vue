@@ -18,14 +18,18 @@
       </div>
     </div>
     <div id="buttons">
-      <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
-      <router-link to="face" id="next-button" class="btn">Next</router-link>
+      <button id="back-button" class="btn" v-on:click="moveBack()">Back</button>
+      <button id="reload-button" class="btn" v-on:click="refresh()">Refresh</button>
+      <button id="next-button" class="btn" v-on:click="moveOn()">Next</button>
+      <!-- <a @click="$router.go(-1)" id="back-button" class="btn">Back</a>
+      <router-link to="face" id="next-button" class="btn">Next</router-link> -->
     </div>
   </div>
 </template> 
 
 <script>
 import axios from 'axios'
+import loading_img from '../assets/loading.gif'
 
 export default {
   name: "BodyPage",
@@ -33,23 +37,31 @@ export default {
   data: function () {
     return {
       bdy: [
-        { id: 1, sel: false, src: require("../assets/new_photo.png") },
-        { id: 2, sel: false, src: require("../assets/new_photo.png") },
-        { id: 3, sel: false, src: require("../assets/new_photo.png") },
-        { id: 4, sel: false, src: require("../assets/new_photo.png") },
-        { id: 5, sel: false, src: require("../assets/new_photo.png") },
+        { id: 1, sel: false, src: loading_img },
+        { id: 2, sel: false, src: loading_img },
+        { id: 3, sel: false, src: loading_img },
+        { id: 4, sel: false, src: loading_img },
+        { id: 5, sel: false, src: loading_img },
       ],
       curr: -1,
+      ready: false,
     };
   },
   methods: {
     flipSelect(i) {
+      if (!this.ready) {return;}
       // console.log(this.image_file);
-      this.bdy[0].src = this.image_file;
-      
-      if (this.curr>0) {this.bdy[this.curr - 1].sel = false;}
+      // this.bdy[0].src = this.image_file;
+      if (i<0) {return;}
+
+      if (this.curr>0) { this.bdy[this.curr - 1].sel = false; }
       this.bdy[i - 1].sel = true;
-      this.curr = i;
+      if (this.curr == i) {
+        this.bdy[i - 1].sel = false;
+        this.curr = -1;
+      } else {
+        this.curr = i;
+      }      
     },
     getColor(f) {
       if (f) {
@@ -58,42 +70,54 @@ export default {
         return "#001236";
       }
     },
+    moveOn: function() {
+      if (!this.ready) {return;}
+      if (this.curr == -1) {
+        alert("Please select a body.");
+        return;
+      }
+      this.$router.push({ name: 'face', params: {'flag': 1, 'body_num': this.curr }});
+    },
+    moveBack: function() {
+      if (!this.ready) {return;}
+      this.$router.push({ name: 'upload', params: {'flag': 0 }});
+    },
+    requestBodies(){
+      this.ready = false;
+      for(let i=0; i<5; i++) {
+        this.bdy[i].src = loading_img;
+      }
+      // let fl;
+      // if (this.flag == undefined) {
+      //   fl = 1;
+      // } else {
+      //   fl = this.flag;
+      // }
+      axios.post('http://localhost:8888/selectBody', {
+        cloth: this.image_file,
+        // flag: fl,
+        flag: this.flag || 0,
+        user_id: this.$cookie.get('user_id'),
+      }).then(res => {
+        console.log(res);
+        for(let i=0; i<5; i++) {
+          this.bdy[i].src = "data:image/png;base64, " + res.data[i];
+        }
+        this.ready = true;
+      })
+    },
+    refresh(){
+      console.log("curr="+this.curr);
+      this.flipSelect(this.curr);
+      this.requestBodies();
+    }
   },
   created() {
-    fetch(this.image_file)
-      .then(res => res.blob()) // Gets the response and returns it as a blob
-      .then(blob => {
-        // Here's where you get access to the blob
-        // And you can use it for whatever you want
-        // Like calling ref().put(blob)
-
-        // Here, I use it to make an image appear on the page
-        // let objectURL = URL.createObjectURL(blob);
-        // let myImage = new Image();
-        // myImage.src = objectURL;
-        // document.getElementById('myImg').appendChild(myImage)
-
-        axios.post('http://192.168.243.17:8888/selectBody', { 
-          cloth: blob,
-          flag: this.flag,
-          user_id: this.$cookie.get('user_id')
-        }).then(res => {
-          console.log(res);
-          for(let i=0; i<5; i++) {
-            var blob = new Blob([encodeURI(res.data[i])], { type: 'image/jpg' });
-            var file = new File([blob], 'tmp_file.jpg', {type: 'image/jpg', lastModified: Date.now()});
-            console.log(file);
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = e =>{
-                // this.image_src = e.target.result;
-                // this.new_src = e.target.result;
-                // console.log(e.target.result);
-                this.bdy[i].src = e.target.result;
-            };
-          }
-        })
-    });
+    if (this.$cookie.get('user_id')=='') {
+      this.$router.push({ name: 'index'});
+      alert("You are not logged in.");
+    }
+    this.requestBodies();
   }
 };
 </script>
@@ -130,6 +154,9 @@ p {
   margin-top: 20px;
   margin-left: 10%;
   width: fit-content;
+  grid-row: 1;
+  grid-column: 1;
+
 }
 .photo-wrapper {
   width: 100%;

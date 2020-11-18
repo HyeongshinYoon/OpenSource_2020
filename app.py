@@ -7,6 +7,12 @@ import cv2
 import json
 import os
 import base64
+import tempfile
+import io
+import torch
+from torchvision import utils
+import urllib
+import random
 from cp_viton.get_mask import get_mask
 from cp_viton.test import viton
 from face_crop.face_crop import image_divide, image_merge_process
@@ -36,36 +42,41 @@ storage = firebase.storage()
 user_id = 0
 cloth_img = {}
 body_mixing_img = {}
-bodys = []
+bodys = {}
 face_mixing_img = {}
 fixed_body = {}
+upload_image = {}
+model = {}
+body_name = {}
 
 
-@app.route("/", methods=['GET', 'POST'])
 def body_init():
     global bodys
     if len(bodys) == 0:
         bodys_name = db.child("bodys").get()
-#        print(bodys_name)
+        cnt = 0
         for body in bodys_name.each():
-            print(body.val())
-            bodys.append(storage.child('bodys').download(body.val()))
+            bodys[cnt] = {}
+            url = storage.child(body.val()).get_url(1)
+            response = urllib.request.urlopen(url).read()
+            # img_file = Image.open(io.BytesIO(response))
+            bodys[cnt]['name'] = body.val()
+            bodys[cnt]['image'] = base64.b64encode(response).decode('utf8')
+            cnt += 1
 
 
-@app.route("/addBody", methods=['GET', 'POST'])
+@ app.route("/addBody", methods=['GET', 'POST'])
 def addBody():
     last_body_id = db.child("last_body_id").get().val()
     if last_body_id == None:
         last_body_id = 0
 
+    last_body_id = 0
     db.child('bodys').remove()
     for i in range(10):
         body_address = "./data/body/body"+str(i+1)+".jpg"
-        # body = cv2.imread("./data/body/body"+str(i+1)+".jpg").tolist()
         with open(body_address, 'rb') as imageFile:
             a = imageFile.read()
-#            a = base64.b64encode(imageFile.read())  # .decode('utf8')
-        # body = "./data/body/body"+str(i+1)+".jpg"
         storage.child("body"+str(last_body_id)).put(a)
         db.child('bodys').push("body"+str(last_body_id))
         last_body_id = last_body_id + 1
@@ -73,65 +84,174 @@ def addBody():
     db.child("last_body_id").set(last_body_id)
 
 
+def base64ToImage(a):
+    a += "=" * ((4 - len(a) % 4) % 4)
+    im_bytes = base64.b64decode(a)
+    im_arr = np.frombuffer(im_bytes, dtype=np.uint8)
+    b = Image.fromarray(im_arr)
+    return b
+
+
+def image4ToBase64(a):
+    b = base64.b64encode(a).decode('utf8')
+    return b
+
+
+def pilImageToCv2Image(a):
+    b = np.array(a.convert('RGB'))
+    b = b[:, :, ::-1].copy()
+    return b
+
+
 @ app.route("/selectBody", methods=['GET', 'POST'])
 def selectBody():
-    global cloth_img, body_mixing_img, bodys
+    global cloth_img, body_mixing_img, bodys, body_name
+
+    selecting_bodys = {}
+    body_names = {}
+
+    flag = 1
+    user_id = 0
+
+    req_data = request.json
+    flag = req_data['flag']
+    user_id = req_data['user_id']
+
+    if flag == 1:
+        cloth = base64ToImage(req_data['cloth'])
+        if cloth == None:
+            selecting_bodys = body_mixing_img[user_id]
+            body_names = bodys[user_id]
+        else:
+            cloth_img[user_id] = cloth
+
+            # body mixing
+            rand_num = []
+            #rand_num = np.random.randint(len(bodys), size=len(bodys))
+            for i in range(5):
+                a = random.randrange(len(bodys))
+                while a in rand_num:
+                    a = random.randrange(len(bodys))
+                rand_num.append(a)
+
+                selecting_bodys[i] = bodys[a]['image']
+                body_names[i] = bodys[a]['name']
+
+    else:
+        selecting_bodys = body_mixing_img[user_id]
+        body_names = body_name[user_id]
+
+    body_mixing_img[user_id] = selecting_bodys
+    body_name[user_id] = body_names
+    return json.dumps(selecting_bodys)
+
+
+def merge_face(user_id, body_id):
+    global body_name, cloth_img
+    cloth = cloth_img[user_id]
+    cloth_name = "cloth" + str(user_id) + ".jpg"
+    cloth_image = pilImageToCv2Image(cloth)
+    fp = './data/test/cloth/' + cloth_name
+
+    #cloth = np.transpose(np.uint8(cloth.numpy()*255), (1, 2, 0))
+    r, b = cv2.imencode('.jpg', cloth_image)
+    data_encode = np.array(b)
+    str_encode = data_encode.tostring()
+    # np_img = torch.from_numpy(cloth_image)
+    with open(fp, 'wb') as f:
+        f.write(str_encode)
+        f.flush
+    # b.save(fp)
+    # utils.save_image(np_img, fp, nrow=1, normalize=True)
+    # cloth.save()
+    body_names = body_name[user_id]
+    get_mask(cloth_name)
+
+    # GMM test
+    data_list = [body_names, cloth_name]
+    viton('GMM', data_list)
+
+    # TOM test
+    viton('TOM', data_list)
+
+    body_address = "./data/result/"+body_names+".jpg"
+    with open(body_address, 'rb') as imageFile:
+        a = imageFile.read()
+    fixed_body[user_id] = base64.b64encode(a).decode('utf8')
+
+
+@ app.route("/selectFaceFirst", methods=['GET', 'POST'])
+def selectFaceFirst():
 
     selecting_bodys = {}
 
-    # test
-    '''
     for i in range(5):
         body_address = "./data/test/cloth/000048_1.jpg"
         with open(body_address, 'rb') as imageFile:
             a = base64.b64encode(imageFile.read()).decode('utf8')
         # body = cv2.imread(body_address)
         selecting_bodys[i] = a
+    return json.dumps(selecting_bodys)
+    global body_mixing_img, face_mixing_img
+    global fixed_body, bodys
 
-    # real
-    '''
-    flag = True  # request.form.get('flag')
-    user_id = 0  # request.form.get('user_id')
-    if flag == True:
-        # cloth = request.form.get('cloth')
-        req_data = request.json
-        # print("req_data :" + json.dumps(req_data))
-        # print(request.files)
-        cloth = req_data['cloth']
-        if cloth == None:
-            selecting_bodys = face_mixing_img[user_id]
-            pass
+    selecting_faces = {}
+    style_v = {}
+
+    req_data = request.json
+    flag = req_data['flag']
+    user_id = req_data['user_id']
+
+    if flag == 1:
+        body_id = req_data['body_id']
+        if body_id == None:
+            selecting_faces = face_mixing_img[user_id]['faces']
+            print("Body_id is none")
         else:
-            #cloth_img[user_id] = cloth
-            # get_mask(cloth)
+            face_mixing_img[user_id] = {}
+            # body_x, body_y, body_w, body_h, body_face, resized_body
+            print("Body_id is not none")
+            body_decode = body_mixing_img[user_id][body_id]
+            body = base64ToImage(body_decode)
+            body_image = pilImageToCv2Image(body)
+            fixed_body[user_id] = image_divide(body_image)
+            body_face = fixed_body[user_id][4]
 
-            # body mixing
-            rand_num = np.random.randint(5, size=len(bodys))
             for i in range(5):
-                body = bodys[rand_num[i]]
+                print("Generate face "+str(i))
+                style, face = face_gen()
+                face = np.transpose(np.uint8(face.numpy()*255), (1, 2, 0))
+                style_v[i] = style.tolist()
+                result_img = face_swap(body_face, face)
+                _, b = cv2.imencode('.jpg', result_img)
+                t = image4ToBase64(b)  # base64.b64encode(b)
+                selecting_faces[i] = t
 
-                # GMM test
-                #data_list = [body, cloth]
-                #viton('GMM', data_list)
+            print("Generate face finish")
 
-                # TOM test
-                #viton('TOM', data_list)
-
-                # result_img
-                selecting_bodys[i] = body
+            face_mixing_img[user_id]['style_vector'] = style_v
+            face_mixing_img[user_id]['faces'] = selecting_faces
 
     else:
-        selecting_bodys = body_mixing_img[user_id]
+        selecting_faces = face_mixing_img[user_id]['faces']
 
-    body_mixing_img[user_id] = selecting_bodys
+    return json.dumps(selecting_faces)
 
+
+@ app.route("/selectFaceSecond", methods=['GET', 'POST'])
+def selectFaceSecond():
+
+    selecting_bodys = {}
+
+    for i in range(5):
+        body_address = "./data/test/cloth/000048_1.jpg"
+        with open(body_address, 'rb') as imageFile:
+            a = base64.b64encode(imageFile.read()).decode('utf8')
+        # body = cv2.imread(body_address)
+        selecting_bodys[i] = a
     return json.dumps(selecting_bodys)
 
-
-@ app.route("/selectFaceFirst", methods=['GET', 'POST'])
-def selectFaceFirst():
-
-    global body_mixing_img, face_mixing_img
+    global face_mixing_img
     global fixed_body
 
     selecting_faces = {}
@@ -140,51 +260,31 @@ def selectFaceFirst():
     req_data = request.json
     flag = req_data['flag']
     user_id = req_data['user_id']
-    if flag == True:
-        body_id = req_data['body_id']
-        if body_id == None:
-            selecting_faces = face_mixing_img[user_id]['faces']
-        else:
-            # body_x, body_y, body_w, body_h, body_face, resized_body
-            body = body_mixing_img[user_id][body_id]
-            fixed_body[user_id] = image_divide(body)
-            body_face = fixed_body[user_id][4]
-
-            for i in range(5):
-                style, face = face_gen()
-                style_v[i] = style.tolist()
-                selecting_faces[i] = face_swap(body_face, face)
-
-            face_mixing_img[user_id]['style_vector'] = style_v
-            face_mixing_img[user_id]['faces'] = selecting_faces
-
-    return json.dumps(selecting_faces)
-
-
-@ app.route("/selectFaceSecond", methods=['GET', 'POST'])
-def selectFaceSecond():
-
-    global face_mixing_img
-
-    selecting_faces = {}
-    style_v = {}
-
-    req_data = request.json
-    flag = req_data['flag']
-    user_id = req_data['user_id']
-    if flag == True:
+    if flag == 1:
         face_id = req_data['face_id']
         if face_id == None:
             selecting_faces = face_mixing_img[user_id]['second_faces']
         else:
             face_style = face_mixing_img[user_id]['style_vector'][face_id]
+            body_face = fixed_body[user_id][4]
 
             for i in range(5):
+                print("Generate2 face "+str(i))
                 new_style, _ = face_gen()
                 style_v[i] = new_style.tolist()
-                selecting_faces[i] = style_mixing(face_style, new_style)
+                result = style_mixing(face_style, new_style)
+                result = np.transpose(np.uint8(result.numpy()*255), (1, 2, 0))
+                result = face_swap(body_face, result)
+                _, b = cv2.imencode('.jpg', result)
+                t = image4ToBase64(b)
+                selecting_faces[i] = t
 
-            face_mixing_img[user_id]['second_faces'] = selecting_faces
+    else:
+        selecting_faces = face_mixing_img[user_id]['second_faces']
+
+    print("Generate face finish")
+
+    face_mixing_img[user_id]['second_faces'] = selecting_faces
 
     return json.dumps(selecting_faces)
 
@@ -193,29 +293,38 @@ def selectFaceSecond():
 def selectModel():
 
     global face_mixing_img
-    global fixed_body
+    global fixed_body, model
 
     req_data = request.json
     user_id = req_data['user_id']
     face_id = req_data['face_id']
+    body_id = req_data['body_id']
+    merge_face(user_id, body_id)
     result_face = face_mixing_img[user_id]['second_faces'][face_id]
+    result_face = base64ToImage(result_face)
+    result_face = pilImageToCv2Image(result_face)
 
-    model = image_merge_process(fixed_body[user_id], result_face)
+    body_img = fixed_body[user_id]
+    body_img = base64ToImage(body_img)
+    body_img = pilImageToCv2Image(body_img)
 
-    return json.dumps(model)
+    result_img = image_merge_process(body_img, result_face)
+    _, b = cv2.imencode('.jpg', result_img)
+    t = image4ToBase64(b)
+    model[user_id] = t
+    return json.dumps(t)
 
 
 @ app.route("/addLookBook", methods=['GET', 'POST'])
 def addLookBook():
+    global model
     req_data = request.json
     user_id = req_data['user_id']
-    model = req_data['model']
-    user_id = request.form.get('user_id')
     last_model_id = db.child("last_model_id").get().val()
     if last_model_id == None:
         last_model_id = 0
 
-    storage.child("model"+str(last_model_id)).put(model)
+    storage.child("model"+str(last_model_id)).put(model[user_id])
     db.child(user_id).child('lookbook').push("model"+str(last_model_id))
 
     last_model_id = last_model_id + 1
@@ -223,22 +332,47 @@ def addLookBook():
 
 
 @ app.route("/getLookbook", methods=['GET', 'POST'])
-def getLookbook(user):
+def getLookbook():
 
-    user_id = request.form.get('user_id')
-    lookbook_ids = db.child(user_id).child('lookbook').get()
+    selecting_bodys = {}
 
+    for i in range(5):
+        body_address = "./data/test/cloth/000048_1.jpg"
+        with open(body_address, 'rb') as imageFile:
+            a = base64.b64encode(imageFile.read()).decode('utf8')
+        # body = cv2.imread(body_address)
+        selecting_bodys[i] = a
+
+    return json.dumps(selecting_bodys)
+
+    cnt = 0
     lookbook = {}
-    if lookbook_ids.each() == None:
-        return json.dumps({})
-    else:
-        cnt = 0
-        for lookbook_id in lookbook_ids:
-            model = storage.child(lookbook_id).get_url()
-            lookbook[cnt] = model
-            cnt = cnt + 1
+    lookbook_ids = db.child("lookbook").get()
+    if lookbook_ids.val() is not None:
+        for lookbook_id in lookbook_ids.each():
+            url = storage.child(lookbook_id.val()).get_url(1)
+            response = urllib.request.urlopen(url).read()
+            lookbook[cnt] = base64.b64encode(response).decode('utf8')
+            cnt += 1
 
     return json.dumps(lookbook)
+
+
+@ app.route("/startUpload", methods=['GET', 'POST'])
+def startUpload():
+    global cloth_img
+
+    req_data = request.json
+    print(req_data)
+    user_id = req_data['user_id']
+    cloth = {}
+    if 'flag' in req_data is True:
+        flag = req_data['flag']
+        if flag == 0:
+            if cloth_img[user_id] is not None:
+                cloth.append(cloth_img[user_id])
+
+    return json.dumps(cloth)
 
 
 '''
@@ -336,6 +470,7 @@ def selectFace(n):
 '''
 if __name__ == '__main__':
     #    app.run(host='127.0.0.1', port=8888)
+
+    app.before_first_request(body_init)
     app.run(host="0.0.0.0", port=8888, debug=True)
-    body_init()
 # -> main.html
