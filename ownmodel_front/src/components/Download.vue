@@ -53,7 +53,9 @@ export default {
         user_id: this.$cookie.get('user_id'),
         body_id: this.body_id || 0,
       }).then(res => {
-        this.image_src = "data:image/png;base64, " + res.data[0];
+        console.log("Download response");
+        console.log(res);
+        this.image_src = "data:image/png;base64, " + res.data;
         this.ready = true;
       })
     },

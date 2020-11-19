@@ -1,0 +1,11 @@
+{
+  "python.pythonPath": "C:\\Users\\tkxkd\\AppData\\Local\\Programs\\Python\\Python36\\python.exe",
+  "editor.formatOnSave": true,
+  "launch": { "configurations": [], "compounds": [] },
+
+  "editor.defaultFormatter": "ms-python.python",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnPaste": true
+}

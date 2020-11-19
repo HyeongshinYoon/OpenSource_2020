@@ -52,7 +52,9 @@ export default {
       this.$router.push({ name: 'index'});
       alert("You are not logged in.");
     }
-    axios.get('http://localhost:8888/getLookbook').then(res => {
+    axios.post('http://localhost:8888/getLookbook', {
+        user_id: this.$cookie.get('user_id'),
+      }).then(res => {
       let lookbook_photos= [];
       console.log(res.data);
       console.log(Object.keys(res.data).length);

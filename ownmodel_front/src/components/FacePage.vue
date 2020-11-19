@@ -135,7 +135,7 @@ export default {
         alert("Please select a face.");
         return;
       }
-      this.$router.push({ name: 'download', params: {'flag': 1, 'face_id': this.curr2-1, 'body_id': this.body_id-1}});
+      this.$router.push({ name: 'download', params: {'flag': 1, 'face_id': this.curr2-1, 'body_id': this.body_num-1}});
     },
     moveBack: function() {
       if (!this.ready) {return;}
