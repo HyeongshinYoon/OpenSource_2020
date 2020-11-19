@@ -5,7 +5,7 @@
       <div id="acc-img">
         <img class="prof-img" src="../assets/musinsha.png"/>
       </div>
-      <div class="acc-menu"><p>Musinsha Store</p></div>
+      <div class="acc-menu"><p>{{$cookie.get('user_id')}}</p></div>
       <div class="acc-menu"><p>Edit</p></div>
     </div>
     <div id="lookbook">

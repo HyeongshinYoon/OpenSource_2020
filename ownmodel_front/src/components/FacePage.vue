@@ -78,12 +78,13 @@ export default {
   methods: {
     refresh(){
       if (!this.ready) {return;}
-      let refresh2 = this.curr2 > 0;
-      this.flipSelect1(this.curr1);
+      let refresh2 = this.curr2 >= 0;
       this.ready = false;
       if (refresh2) {
+        this.flipSelect2(this.curr2);
         this.requestSecondFace();
       } else {
+        this.flipSelect1(this.curr1);
         this.requestFirstFace();
       }
     },
