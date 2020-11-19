@@ -43,8 +43,8 @@ class CPDataset(data.Dataset):
         return "CPDataset"
 
     def __getitem__(self, index):
-        c_name = self.c_names[index]
-        im_name = self.im_names[index]
+        c_name = self.c_names
+        im_name = self.im_names
 
         # cloth image & cloth mask
         if self.stage == 'GMM':

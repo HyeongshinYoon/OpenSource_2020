@@ -48,10 +48,10 @@ def test_gmm(opt, test_loader, model, board):
     # model.cuda()
     model.eval()
 
-    # base_name = os.path.basename(opt.checkpoint)
+    base_name = os.path.basename(opt.checkpoint)
     save_dir = os.path.join(os.getcwd(), 'data', 'test')
-    # if not os.path.exists(save_dir):
-    #     os.makedirs(save_dir)
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
     warp_cloth_dir = os.path.join(save_dir, 'warp-cloth')
     if not os.path.exists(warp_cloth_dir):
         os.makedirs(warp_cloth_dir)
@@ -73,22 +73,25 @@ def test_gmm(opt, test_loader, model, board):
         im_c = inputs['parse_cloth'].to(device)
         im_g = inputs['grid_image'].to(device)
 
-        grid, theta = model(agnostic, c)
+        grid, _ = model(agnostic, c)
         warped_cloth = F.grid_sample(c, grid, padding_mode='border')
         warped_mask = F.grid_sample(cm, grid, padding_mode='zeros')
         warped_grid = F.grid_sample(im_g, grid, padding_mode='zeros')
 
+    save_images(warped_cloth, c_names, warp_cloth_dir)
+    save_images(warped_mask*2-1, c_names, warp_mask_dir)
+
+
+'''
         visuals = [[im_h, shape, im_pose],
                    [c, warped_cloth, im_c],
                    [warped_grid, (warped_cloth+im)*0.5, im]]
-
-        save_images(warped_cloth, c_names, warp_cloth_dir)
-        save_images(warped_mask*2-1, c_names, warp_mask_dir)
-
+                   
         if (step+1) % opt.display_count == 0:
             board_add_images(board, 'combine', visuals, step+1)
             t = time.time() - iter_start_time
             print('step: %8d, time: %.3f' % (step+1, t), flush=True)
+'''
 
 
 def test_tom(opt, test_loader, model, board):
@@ -131,9 +134,13 @@ def test_tom(opt, test_loader, model, board):
             t = time.time() - iter_start_time
             print('step: %8d, time: %.3f' % (step+1, t), flush=True)
 
+    return p_tryon
+
 
 def viton(stage, data_list):
-    # stage : 'GMM' or 'TOM' / data_list(list type) : [im_names, c_names]
+    # stage : 'GMM' or 'TOM'
+    # data_list(list type) 'GMM' : [im_names, c_names]
+    # data_list(list type) 'TOM' : [im_names, c_names]
     opt = get_opt(stage, data_list)
     print(opt)
     print("Start to test stage: %s, named: %s!" % (opt.stage, opt.name))

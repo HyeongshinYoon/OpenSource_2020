@@ -25,8 +25,8 @@ class fashion_tools(object):
     def get_dress(self, stack=False):
         name = './data/test/cloth/' + self.imageid
         file = cv2.imread(name)
-        file = tf.image.resize_with_pad(
-            file, target_height=512, target_width=384)
+        print(file)
+        file = tf.image.resize_with_pad(file, 512, 384)
         file = np.expand_dims(file, axis=0) / 255.
         seq = self.model.predict(file)
         seq = seq[3][0, :, :, 0]
