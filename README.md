@@ -1,12 +1,18 @@
 # OpenSource_Contest_2020
 
 ## Introduction
-### Members
+*  Members \
 [KangsanKim07](https://github.com/KangsanKim07) \
 [totolacky](https://github.com/totolacky) \
 [HyeongshinYoon](https://github.com/HyeongshinYoon)
 
-### Directory Structure
+* Usage Languages \
+Front-end: Vue.js \
+Back-end: Flask \
+DB: Firebase \
+Etc: OpenCV, Pytorch, Tensorflow
+
+## Directory Structure
 <pre><code>OpenSource_Contest_2020
 |- ownmodel_front
 |- ownmodel_back
@@ -17,21 +23,41 @@
     |- data
 </code></pre>
 
-## CP-VTON
-> 
-> Ref: [https://github.com/sergeywong/cp-vton]()
+
+## Implementation
+* Environments
+  <pre><code>Python 3.6.8
+  Pytorch 1.7.0, torchvision 0.8.1
+  dlib 19.21.0</code></pre>
+* Front-end Part
+  <pre><code>$ cd ownmodel_front
+  $ npm run serve</code></pre>
+* Back-end Part
+  <pre><code>$ cd ownmodel_back
+  $ python app.py</code></pre>
+
+## Results
+
+![result_image](./result.PNG)
 
 
-## StyleGAN
-> Generate new faces \
-> Model download \
-> [https://drive.google.com/file/d/1QlXFPIOFzsJyjZ1AtfpnVhqW4Z0r8GLZ/view]() \
-> Save the model at face_gen folder. \
-> Ref: [https://github.com/rosinality/style-based-gan-pytorch]()
+## References & Opensources
+
+* CP-VTON : 
+[dataset](https://onedrive.live.com/?cid=5435770760f02d2f&id=5435770760F02D2F%211156&authkey=!ABhfRrNiGogM8_o),
+ [code](https://github.com/sergeywong/cp-vton)
+    > Wear cloth on body
 
 
-## FACE-SWAP
-> Change two faces \
-> Using OpenCV with Python \
-> Ref: [https://github.com/BruceMacD/Face-Swap-OpenCV]()
+* StyleGAN :
+[model](https://drive.google.com/file/d/1QlXFPIOFzsJyjZ1AtfpnVhqW4Z0r8GLZ/view),
+ [code](https://github.com/rosinality/style-based-gan-pytorch)
+    > Generate new faces \
+    > Save the model at face_gen folder.
+
+
+* FACE-SWAP
+[code](https://github.com/BruceMacD/Face-Swap-OpenCV),
+ [docs](https://www.learnopencv.com/face-swap-using-opencv-c-python/)
+    >Change two faces
 

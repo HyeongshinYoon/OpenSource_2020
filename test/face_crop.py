@@ -7,12 +7,8 @@ from os.path import isfile, join
 def image_divide():
 
     face_cascade = cv2.CascadeClassifier('../xml/haarcascade_frontface.xml')
-
-    # 3, 12, 14, 25, 111, 189, 206, 234, 254, 268, 289, 467, 528, 661, 1040, 1074, 1246, 1312, 1523, 1556, 1560, 1696, 1783
-    # body_address = ["000003_0", "000012_0", "000014_0", "000025_0", "000111_0", "000189_0", "000206_0", "000234_0", "000254_0", "000268_0", "000289_0",
-    #                 "000467_0", "000528_0", "000661_0", "001040_0", "001074_0", "001246_0", "001312_0", "001523_0", "001556_0", "001560_0", "001696_0", "001783_0"]
+    
     body_address = [f for f in listdir("../image/image/")]
-    # print(body_address)
     for i in range(len(body_address)):
         address = "../image/image/" + \
             str(body_address[i])
