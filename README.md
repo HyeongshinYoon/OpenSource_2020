@@ -39,7 +39,7 @@ Etc: OpenCV, Pytorch, Tensorflow
 ## Results
 
 ![result_image](./result.PNG)
-<iframe width="956" height="538" src="https://www.youtube.com/embed/Z6GLrz0Pq2g" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video]](https://www.youtube.com/watch?v=Z6GLrz0Pq2g&feature=youtu.be)
 
 
 ## References & Opensources
