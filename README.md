@@ -38,8 +38,8 @@ Etc: OpenCV, Pytorch, Tensorflow
 
 ## Results
 
-![result_image](./result.PNG)
-[![Watch the video]](https://www.youtube.com/watch?v=Z6GLrz0Pq2g&feature=youtu.be)
+![result_image](./result.PNG) \
+[Watch the video](https://www.youtube.com/watch?v=Z6GLrz0Pq2g&feature=youtu.be)
 
 
 ## References & Opensources
