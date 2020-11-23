@@ -46,8 +46,12 @@ Etc: OpenCV, Pytorch, Tensorflow
 
 * CP-VTON : 
 [dataset](https://onedrive.live.com/?cid=5435770760f02d2f&id=5435770760F02D2F%211156&authkey=!ABhfRrNiGogM8_o),
- [code](https://github.com/sergeywong/cp-vton)
-    > Wear cloth on body
+ [code](https://github.com/sergeywong/cp-vton),
+  [model(get_mask)](https://drive.google.com/file/d/1PCLv_p3x-BbZv-AM0fVpd_zg0nU24wlR/view?usp=sharing),
+   [model(CP-VTON-gmm)](https://drive.google.com/file/d/1A5pQPSCm6n2rNlKA8PFEzaU9ClvqfUkG/view?usp=sharing)
+    > Wear cloth on body \
+    > Save 'save_ckp_frozen.h5' at ownmodel/ownmodel_back/cp_viton folder \
+    > Save 'gmm_final.pth' at ownmodel/ownmodel_back/cp_viton/checkpoints/gmm_train_new folder
 
 
 * StyleGAN :
