@@ -1,6 +1,7 @@
 # OpenSource_Contest_2020
 
 ## Introduction
+*  [Promo Video](https://www.youtube.com/watch?v=Pu4BiJlqSkk)
 *  Members \
 [KangsanKim07](https://github.com/KangsanKim07) \
 [totolacky](https://github.com/totolacky) \
