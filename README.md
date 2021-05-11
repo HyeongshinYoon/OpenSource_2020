@@ -2,6 +2,7 @@
 
 ## Introduction
 *  [Promo Video](https://www.youtube.com/watch?v=Pu4BiJlqSkk)
+*  [Demo Video](https://www.youtube.com/watch?v=Z6GLrz0Pq2g&feature=youtu.be)
 *  Members \
 [KangsanKim07](https://github.com/KangsanKim07) \
 [totolacky](https://github.com/totolacky) \
@@ -40,7 +41,6 @@ Etc: OpenCV, Pytorch, Tensorflow
 ## Results
 
 ![result_image](./result.PNG) \
-[Demo video](https://www.youtube.com/watch?v=Z6GLrz0Pq2g&feature=youtu.be)
 
 
 ## References & Opensources
